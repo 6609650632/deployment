@@ -20,22 +20,21 @@ spec:
       labels:
         app: go-api
       annotations:
-        # Prometheus auto-scrape annotations
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/metrics"
     spec:
-      terminationGracePeriodSeconds: 30   # time for graceful shutdown
+      terminationGracePeriodSeconds: 30
       containers:
         - name: go-api
-          # TODO: replace with your Docker Hub image after CI/CD builds it
-          image: DOCKER_USERNAME/go-api:latest
-          imagePullPolicy: Always
+          image: wannaporn6609650632/go-api:latest
+          imagePullPolicy: IfNotPresent  
           ports:
             - containerPort: 8080
+
           env:
             - name: DB_HOST
-              value: db-service          # K8s Service name (not IP)
+              value: db-service
             - name: DB_PORT
               value: "5432"
             - name: DB_USER
@@ -51,7 +50,8 @@ spec:
               value: release
             - name: PORT
               value: "8080"
-          # Liveness: restart container if /livez fails
+
+          # 🔍 Liveness Probe
           livenessProbe:
             httpGet:
               path: /livez
@@ -59,13 +59,16 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
-          # Readiness: remove from Service endpoints if /readyz fails
+
+          # 🚦 Readiness Probe
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
+
+          # ⚙️ Resource Limits
           resources:
             requests:
               cpu: 100m
@@ -75,7 +78,7 @@ spec:
               memory: 256Mi
 
 ---
-# ----- Service (NodePort – accessible via minikube service) --
+# ----- Service ----------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
@@ -90,8 +93,8 @@ spec:
       targetPort: 8080
       nodePort: 30080
 
-# ---
-# ----- HorizontalPodAutoscaler (bonus) ----------------------
+---
+# ----- HorizontalPodAutoscaler (optional) -------------------
 # apiVersion: autoscaling/v2
 # kind: HorizontalPodAutoscaler
 # metadata:
