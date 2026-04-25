@@ -22,12 +22,11 @@ jobs:
           $IMAGE_TAG="${{ secrets.DOCKER_USERNAME }}/go-api:latest"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $env:GITHUB_ENV
 
-     
+      # 🔥 FIX ตรงนี้
       - name: Docker login
         shell: powershell
         run: |
-          $token = "${{ secrets.DOCKER_TOKEN }}"
-          $token | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_TOKEN }}"
 
       - name: Build Docker image
         shell: powershell
